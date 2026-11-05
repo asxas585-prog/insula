@@ -1,0 +1,9 @@
+# Настройки для хостинга Render (https://render.com) — деплой через Blueprint
+services:
+  - type: web
+    name: insula-deserta
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true

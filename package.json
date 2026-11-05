@@ -1,0 +1,17 @@
+{
+  "name": "insula",
+  "version": "0.1.0",
+  "description": "Insula Deserta — кооперативная сессионная игра со скрытыми ролями (прототип)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js --dev"
+  },
+  "dependencies": {
+    "three": "0.187.0",
+    "ws": "8.22.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Insula Deserta</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">{ "imports": { "three": "/vendor/three.module.js", "three/addons/": "/addons/" } }</script>
+</head>
+<body>
+<div id="game"></div>
+
+<!-- Лобби -->
+<div id="lobby" class="screen">
+  <div class="card lobby-card">
+    <h1>INSULA DESERTA</h1>
+    <div class="sub">Пустынный остров в Mare Nostrum · кооператив 3–8 игроков · скрытые роли</div>
+    <div id="joinBox">
+      <input id="nameInput" maxlength="16" placeholder="Ваше имя" autocomplete="off">
+      <button id="joinBtn" class="btn primary">Войти в лобби</button>
+    </div>
+    <div id="lobbyBox" class="hidden">
+      <div class="row">
+        <label>Открытая специализация:
+          <select id="specSel"></select>
+        </label>
+        <label id="devRoleWrap" class="hidden">Тест: скрытая роль
+          <select id="devRoleSel"><option value="">случайная</option></select>
+        </label>
+      </div>
+      <div id="specDesc" class="muted"></div>
+      <h3>Игроки <span id="lobbyCount"></span></h3>
+      <ul id="lobbyList"></ul>
+      <button id="startBtn" class="btn primary hidden">Начать экспедицию</button>
+      <div id="lobbyWait" class="muted">Ожидаем, пока хозяин лобби начнёт игру…</div>
+    </div>
+    <div id="lobbyErr" class="err"></div>
+    <details class="rules"><summary>Правила вкратце</summary>
+      <p><b>Общая цель:</b> построить Склад на берегу → Мастерскую → Ферму и Верфь → совершить торговые рейсы в Рим → возвести <b>Ратушу</b>.</p>
+      <p><b>Тёмная сторона</b> (Импостер, Колдун, Контрабандист) тайно выполняет 3 действия для своей победы. Каждое действие оставляет улику, которую видит только <b>Сыщик</b>.</p>
+      <p>Сыщик с 2+ уликами созывает голосование у Склада. Разоблачённый злодей теряет шанс на победу. Убийство <b>Сына императора</b> другим игроком — победа тёмной стороны.</p>
+    </details>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div id="stats" class="panelish">
+    <div class="name-line"><span id="meName"></span> · <span id="meSpec"></span> · ур. <span id="meLvl">1</span></div>
+    <div class="bar"><div id="hpFill" class="fill hp"></div><span id="hpText"></span></div>
+    <div class="bar thin"><div id="xpFill" class="fill xp"></div></div>
+    <div id="roleLine" title="Ваша скрытая роль — никому не показывайте"></div>
+    <div id="statusExtra"></div>
+  </div>
+  <div id="objectives" class="panelish"></div>
+  <canvas id="minimap" width="200" height="200"></canvas>
+  <div id="monsterBar" class="hidden"><div class="mlabel">Чудовище из песков</div><div class="bar"><div id="monsterFill" class="fill hp"></div></div><div id="monsterInfo"></div></div>
+  <div id="log"></div>
+  <div id="chatWrap" class="hidden"><input id="chatInput" maxlength="200" placeholder="Сообщение (Enter — отправить)"></div>
+  <div id="prompt"></div>
+  <div id="secretPrompt"></div>
+  <div id="holdBar" class="hidden"><div id="holdFill"></div><span id="holdText"></span></div>
+  <div id="bottom">
+    <div id="resBar"></div>
+    <div id="hotbar"></div>
+  </div>
+  <div id="crosshair"></div>
+  <div id="lockHint">Кликните, чтобы управлять камерой · H — помощь</div>
+</div>
+
+<div id="panel" class="modal hidden"></div>
+<div id="buildMenu" class="modal hidden"></div>
+<div id="journal" class="modal hidden"></div>
+<div id="invBox" class="modal hidden"></div>
+<div id="help" class="modal hidden">
+  <h2>Управление</h2>
+  <table class="keys">
+    <tr><td>WASD</td><td>движение, Shift — бег</td></tr>
+    <tr><td>Мышь</td><td>камера (клик по экрану захватывает курсор)</td></tr>
+    <tr><td>ЛКМ</td><td>удар кулаком/оружием; копьё — бросок (потом его надо подобрать)</td></tr>
+    <tr><td>E</td><td>взаимодействие: подобрать, открыть постройку, <b>удерживать</b> — добывать ресурс</td></tr>
+    <tr><td>F</td><td>(удерживать) тайное действие — только для тёмных ролей</td></tr>
+    <tr><td>X</td><td>надеть/снять маску (тёмные роли): скрывает имя над головой, в чате и на карте</td></tr>
+    <tr><td>I / Tab</td><td>инвентарь: описание предметов, выбросить, переложить на панель</td></tr>
+    <tr><td>1–6</td><td>использовать предмет / взять оружие в руку / Сыщик: бросить чайку</td></tr>
+    <tr><td>Q</td><td>быстро использовать лечение</td></tr>
+    <tr><td>G</td><td>выбросить последний выбранный предмет</td></tr>
+    <tr><td>B</td><td>меню строительства (R — повернуть, ЛКМ — заложить, ПКМ/Esc — отмена)</td></tr>
+    <tr><td>J</td><td>журнал: роль, задачи, улики</td></tr>
+    <tr><td>M</td><td>карта острова</td></tr>
+    <tr><td>V</td><td>окно голосования</td></tr>
+    <tr><td>Enter</td><td>чат</td></tr>
+    <tr><td>P</td><td>качество графики: высокое / экономное (если игра тормозит)</td></tr>
+    <tr><td>Колесо</td><td>приблизить / отдалить камеру</td></tr>
+    <tr><td>Esc</td><td>закрыть окно</td></tr>
+  </table>
+  <p class="muted">Ресурсы: брёвна — сухие деревья и пальмы, песок — белые песчаные кучи. Сдавайте всё на Склад. В точках интереса (развалины, деревни, святилища) лежат оружие, лечение, деньги и особые предметы. Со зверей падают шкуры — их продают кораблём. Вода оазиса лечит. Чаек на берегу ловят броском копья.</p>
+</div>
+<div id="voteBox" class="modal hidden"></div>
+<div id="bigmapWrap" class="modal hidden"><canvas id="bigmap" width="640" height="640"></canvas><div class="muted">M — закрыть</div></div>
+<div id="deadOverlay" class="screen hidden"><div id="deadText"></div></div>
+<div id="endScreen" class="screen hidden"><div class="card" id="endCard"></div></div>
+
+<script type="module" src="client.js"></script>
+</body>
+</html>
