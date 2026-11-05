@@ -114,8 +114,11 @@ if not errorlevel 1 goto regok
 set /a tries+=1
 if %tries% geq 60 (
   echo  [!] Туннель не смог подключиться к Cloudflare за минуту.
-  echo      Скорее всего, соединение блокирует провайдер, антивирус или брандмауэр.
+  echo      Скорее всего, туннели Cloudflare блокирует провайдер, VPN или антивирус.
   echo      Подробности в файле tunnel.log
+  echo.
+  echo      Если не помогает отключение/включение VPN - используйте файл
+  echo      играть-через-radmin.bat (игра через Radmin VPN, без Cloudflare^).
   pause
   goto stop
 )

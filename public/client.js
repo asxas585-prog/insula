@@ -67,9 +67,14 @@ function renderLobby(m) {
   $('lobbyCount').textContent = `(${m.players.length}/${m.maxPlayers}, минимум ${m.minPlayers})`;
   $('lobbyList').innerHTML = m.players.map((p) => `<li><span class="swatch" style="background:${hexCss(p.color)}"></span>${esc(p.name)} — ${SPECS[p.spec].name}${p.host ? ' 👑' : ''}${p.id === myId ? ' (вы)' : ''}</li>`).join('');
   const host = m.players[0] && m.players[0].id === myId;
+  const need = m.minPlayers - m.players.length;
   $('startBtn').classList.toggle('hidden', !host);
-  $('startBtn').disabled = m.players.length < m.minPlayers;
-  $('lobbyWait').classList.toggle('hidden', host);
+  $('startBtn').disabled = need > 0;
+  $('startBtn').textContent = need > 0 ? `Начать экспедицию (ждём ещё ${need} ${need === 1 ? 'игрока' : 'игроков'})` : 'Начать экспедицию';
+  $('lobbyWait').classList.remove('hidden');
+  $('lobbyWait').innerHTML = host
+    ? (need > 0 ? `Для игры нужно минимум ${m.minPlayers} игрока. Отправьте друзьям ссылку на эту страницу: <b>${esc(location.href)}</b>` : 'Все готовы? Нажмите «Начать экспедицию».')
+    : `Ожидаем, пока хозяин лобби (${esc(m.players[0].name)} 👑) начнёт игру…` + (need > 0 ? ` Нужно ещё игроков: ${need}.` : '');
   $('devRoleWrap').classList.toggle('hidden', !m.dev);
 }
 
